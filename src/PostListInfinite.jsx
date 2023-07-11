@@ -1,0 +1,46 @@
+import {useInfiniteQuery} from '@tanstack/react-query'
+import {getPostsPaginated} from './api/posts'
+
+const PostListInfinite = () => {
+  const {
+    status,
+    error,
+    data,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    // isFetchingPreviousPage,
+    // hasPreviousPage,
+    // fetchPreviousPage,
+  } = useInfiniteQuery({
+    queryKey: ['posts', 'infinite'],
+    //data.nextPage from queryFn / API return
+    getNextPageParam: (prevData) => prevData.nextPage,
+    //getPreviousPageParam
+    queryFn: ({pageParam = 1}) => getPostsPaginated(pageParam),
+  })
+
+  if (status === 'loading') return <h1>Loading...</h1>
+  if (status === 'error') return <h1>{JSON.stringify(error)}</h1>
+
+  return (
+    <>
+      <h1>Post List Infinite</h1>
+      {console.log(data.pages)}
+      {console.log(data.pages.flatMap((data) => data.posts))}
+      {data.pages
+        .flatMap((data) => data.posts)
+        .map((post) => (
+          <div key={post.id}>{post.title}</div>
+        ))}
+      {hasNextPage && (
+        // fetchNextPage fn provided by useInfiniteQuery hook
+        <button onClick={() => fetchNextPage()}>
+          {isFetchingNextPage ? 'Loading...' : 'Load More'}
+        </button>
+      )}
+    </>
+  )
+}
+
+export default PostListInfinite
